@@ -1,5 +1,5 @@
-export async function searchQuery(query) {
-  const response = await fetch("http://152.42.224.69:8000/search/", {
+export async function searchQuery(query, page = 1) {
+  const response = await fetch("http://143.198.220.249:8000/search/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -7,7 +7,7 @@ export async function searchQuery(query) {
     body: JSON.stringify({
       text: query,
       index_name: "my-index",
-      page: 1,
+      page: page,
       page_size: 5,
     }),
   });
