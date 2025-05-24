@@ -12,6 +12,7 @@ function QuestionDetail() {
   const question = query.get("q");
 
   const [answers, setAnswers] = useState([]);
+  const [expandedAnswers, setExpandedAnswers] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loadingAnswers, setLoadingAnswers] = useState(true);
   const [loadingSummary, setLoadingSummary] = useState(false);
@@ -26,6 +27,8 @@ function QuestionDetail() {
     "📊 Evaluating consensus...",
     "⏳ Finalizing summary...",
   ];
+
+  const MAX_LENGTH = 300;
 
   const formatAnswerText = (text) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -48,6 +51,14 @@ function QuestionDetail() {
     });
   };
 
+  const toggleExpand = (index) => {
+    setExpandedAnswers((prev) => {
+      const newExpanded = [...prev];
+      newExpanded[index] = !newExpanded[index];
+      return newExpanded;
+    });
+  };
+
   useEffect(() => {
     async function fetchAnswers() {
       try {
@@ -67,6 +78,7 @@ function QuestionDetail() {
 
         const data = await res.json();
         setAnswers(data.answers || []);
+        setExpandedAnswers(new Array(data.answers?.length || 0).fill(false));
       } catch (err) {
         console.error("Error fetching answers:", err);
         setAnswers(["Error loading answers."]);
@@ -156,16 +168,34 @@ function QuestionDetail() {
           ) : (
             <div className="relative">
               <div className="max-h-96 overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-slate-100 dark:scrollbar-track-slate-800">
-                {answers.map((answer, i) => (
-                  <div
-                    key={i}
-                    className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg border-l-4 border-l-emerald-500"
-                  >
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed break-words break-all overflow-wrap-anywhere">
-                      {formatAnswerText(answer)}
-                    </p>
-                  </div>
-                ))}
+                {answers.map((answer, i) => {
+                  const isExpanded = expandedAnswers[i];
+                  const shouldTruncate = answer.length > MAX_LENGTH;
+                  const displayText = isExpanded
+                    ? answer
+                    : shouldTruncate
+                      ? answer.slice(0, MAX_LENGTH) + "..."
+                      : answer;
+
+                  return (
+                    <div
+                      key={i}
+                      className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg border-l-4 border-l-emerald-500"
+                    >
+                      <p className="text-slate-700 dark:text-slate-300 leading-relaxed break-words break-all overflow-wrap-anywhere">
+                        {formatAnswerText(displayText)}
+                      </p>
+                      {shouldTruncate && (
+                        <button
+                          onClick={() => toggleExpand(i)}
+                          className="text-sm text-emerald-600 dark:text-emerald-400 mt-2 hover:underline"
+                        >
+                          {isExpanded ? "Show Less" : "Show More"}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="mt-3 text-sm text-slate-500 dark:text-slate-400 text-center">
@@ -206,11 +236,10 @@ function QuestionDetail() {
                   .map((message, index) => (
                     <div
                       key={index}
-                      className={`py-2 text-sm transition-all duration-300 ease-in-out ${
-                        index === loadingStep
+                      className={`py-2 text-sm transition-all duration-300 ease-in-out ${index === loadingStep
                           ? "text-slate-600 dark:text-slate-400 opacity-100 transform translate-x-0"
                           : "text-slate-500 dark:text-slate-500 opacity-60 transform -translate-x-2"
-                      }`}
+                        }`}
                     >
                       {message}
                     </div>
