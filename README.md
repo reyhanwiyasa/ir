@@ -6,7 +6,7 @@ Frontend aplikasi Information Retrieval berbasis React + Vite yang menyediakan f
 
 1. **Masuk ke VM (DigitalOcean) via SSH:**
    ```bash
-   ssh youruser@143.198.220.249
+   ssh root@143.198.220.249
    ```
 
 2. **Pindah ke direktori proyek frontend:**
